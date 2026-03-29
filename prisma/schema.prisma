@@ -1,0 +1,74 @@
+// This is the blueprint for the relational database as requested.
+// In a production environment, you would run `npx prisma migrate dev` to apply this.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Nation {
+  id               Int      @id @default(autoincrement())
+  name             String   @default("Thailand")
+  gdp              Float    @default(500.0) // In Billion USD
+  inflation        Float    @default(2.5)   // Percentage
+  stability        Float    @default(70.0)  // 0-100
+  corruptionIndex  Float    @default(35.0)  // 0-100
+  freedomIndex     Float    @default(45.0)  // 0-100
+  treasury         Float    @default(50.0)  // In Billion USD
+  coupMeter        Float    @default(0.0)   // 0-100
+  turn             Int      @default(1)
+  
+  politicians      Politician[]
+  demographics     Demographic[]
+  laws             Law[]
+}
+
+model Politician {
+  id               Int      @id @default(autoincrement())
+  name             String
+  charisma         Float    @default(50.0)
+  wealth           Float    @default(10.0)
+  ideology         String   // "Progressive", "Conservative", "Establishment", "Populist"
+  faction          String?
+  loyalty          Float    @default(80.0)
+  scandals         Int      @default(0)
+  isCobra          Boolean  @default(false)
+  nationId         Int
+  nation           Nation   @relation(fields: [nationId], references: [id])
+}
+
+model Demographic {
+  id               Int      @id @default(autoincrement())
+  name             String   // "Elites", "Middle Class", "Working Class", "Military", etc.
+  populationSize   Float
+  satisfaction     Float    @default(50.0)
+  politicalPower   Float    @default(1.0)
+  nationId         Int
+  nation           Nation   @relation(fields: [nationId], references: [id])
+}
+
+model Law {
+  id               Int      @id @default(autoincrement())
+  title            String
+  description      String
+  isActive         Boolean  @default(false)
+  gdpImpact        Float    @default(0.0)
+  stabilityImpact  Float    @default(0.0)
+  taxRevenue       Float    @default(0.0)
+  nationId         Int
+  nation           Nation   @relation(fields: [nationId], references: [id])
+  articles         Article[]
+}
+
+model Article {
+  id               Int      @id @default(autoincrement())
+  content          String
+  weight           Float
+  targetDemographic String
+  lawId            Int
+  law              Law      @relation(fields: [lawId], references: [id])
+}
